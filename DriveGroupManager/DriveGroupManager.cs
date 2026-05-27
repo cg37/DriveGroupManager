@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using System.Xml.Serialization;  // 用于XML序列化保存数据
+using Newtonsoft.Json;  // 添加这行
 
 namespace DriveGroupManager
 {
@@ -229,44 +229,54 @@ namespace DriveGroupManager
         /// 保存分组数据到XML文件
         /// </summary>
         private void SaveGroups()
+{
+    try
+    {
+        string directory = Path.GetDirectoryName(dataFilePath);
+        if (!Directory.Exists(directory))
         {
-            try
-            {
-                using (var writer = new StreamWriter(dataFilePath))
-                {
-                    var serializer = new XmlSerializer(typeof(List<DriveGroup>));
-                    serializer.Serialize(writer, groups);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"保存数据失败:\n{ex.Message}", "错误", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            Directory.CreateDirectory(directory);
         }
+        
+        // 使用 JSON 序列化，更简单可靠
+        string json = JsonConvert.SerializeObject(groups, Formatting.Indented);
+        File.WriteAllText(dataFilePath, json);
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"保存数据失败:\n{ex.Message}\n\n程序将继续运行，但修改可能不会被保存。", 
+            "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+}
         
         /// <summary>
         /// 从XML文件加载分组数据
         /// </summary>
-        private void LoadGroups()
+      /// <summary>
+/// 从JSON文件加载分组数据
+/// </summary>
+private void LoadGroups()
+{
+    if (!File.Exists(dataFilePath))
+        return;
+    
+    try
+    {
+        string json = File.ReadAllText(dataFilePath);
+        groups = JsonConvert.DeserializeObject<List<DriveGroup>>(json);
+        
+        // 如果加载成功但数据为空，初始化为空列表
+        if (groups == null)
         {
-            if (!File.Exists(dataFilePath))
-                return;
-            
-            try
-            {
-                using (var reader = new StreamReader(dataFilePath))
-                {
-                    var serializer = new XmlSerializer(typeof(List<DriveGroup>));
-                    groups = (List<DriveGroup>)serializer.Deserialize(reader);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"加载数据失败:\n{ex.Message}\n将使用默认数据。", 
-                    "错误", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                groups = new List<DriveGroup>();
-            }
+            groups = new List<DriveGroup>();
         }
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"加载数据失败:\n{ex.Message}\n将使用默认数据。", 
+            "错误", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        groups = new List<DriveGroup>();
+    }
+}
     }
 }
