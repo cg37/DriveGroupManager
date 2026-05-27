@@ -19,6 +19,7 @@ namespace DriveGroupManager
         public MainForm()
         {
             InitializeComponent();
+            this.Font = new Font("微软雅黑", 12F);
             manager = new DriveGroupManagerLogic();
             LoadData();
         }
