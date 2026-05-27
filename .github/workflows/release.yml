@@ -46,7 +46,6 @@ jobs:
             --self-contained false `
             -p:PublishSingleFile=true `
             -p:DebugType=none `
-            -p:PublishTrimmed=true `
             -o ./publish
 
       # 6. 验证 exe 是否生成
