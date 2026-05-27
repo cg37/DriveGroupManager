@@ -9,7 +9,7 @@ namespace DriveGroupManager
   public class DriveGroupManager
   {
     public string GroupName {get; set;}
-    public List<string> DriveLetters{get; set}
+    public List<string> DriveLetters{get; set;}
 
     public string Description{get; set;}
 
