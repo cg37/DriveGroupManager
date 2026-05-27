@@ -14,6 +14,9 @@ namespace DriveGroupManager
         [STAThread]
         static void Main()
         {
+            // 启用 PerMonitorV2 DPI 感知，适配高分屏（必须放在最前面）
+            Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+
             // 启用应用程序的视觉样式（让控件看起来更现代）
             Application.EnableVisualStyles();
             

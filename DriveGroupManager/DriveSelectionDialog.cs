@@ -26,6 +26,8 @@ namespace DriveGroupManager
         
         private void InitializeComponent()
         {
+            this.AutoScaleMode = AutoScaleMode.Font;
+            this.AutoScaleDimensions = new SizeF(96F, 96F);
             this.Text = "选择硬盘";
             this.Size = new Size(350, 150);
             this.StartPosition = FormStartPosition.CenterParent;

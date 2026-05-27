@@ -46,6 +46,8 @@ namespace DriveGroupManager
 
         private void InitializeComponent()
         {
+            this.AutoScaleMode = AutoScaleMode.Font;
+            this.AutoScaleDimensions = new SizeF(96F, 96F);
             this.Text = "编辑硬盘分组";
             this.Size = new Size(1100, 700);
             this.StartPosition = FormStartPosition.CenterParent;

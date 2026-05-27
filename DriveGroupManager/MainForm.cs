@@ -19,13 +19,15 @@ namespace DriveGroupManager
         public MainForm()
         {
             InitializeComponent();
-            this.Font = new Font("微软雅黑", 12F);
             manager = new DriveGroupManagerLogic();
             LoadData();
         }
 
         private void InitializeComponent()
         {
+            this.AutoScaleMode = AutoScaleMode.Font;
+            this.AutoScaleDimensions = new SizeF(96F, 96F);
+            this.Font = new Font("微软雅黑", 12F);
             this.Text = "硬盘分组管理器 - 我的硬盘";
             this.Size = new Size(800, 600);
             this.StartPosition = FormStartPosition.CenterScreen;
