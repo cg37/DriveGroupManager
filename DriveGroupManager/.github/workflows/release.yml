@@ -1,0 +1,91 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*" # 当推送 v1.0.0, v2.1.3 等标签时触发
+  workflow_dispatch: # 也支持手动触发
+    inputs:
+      tag:
+        description: "版本号 (如 v1.0.0)"
+        required: true
+
+permissions:
+  contents: write # 必须有写入权限才能创建 Release
+
+env:
+  DOTNET_VERSION: "8.0.x" # .NET 版本，根据你的项目调整
+  PROJECT_PATH: "." # 项目文件所在目录
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest # WinForms 需要 Windows 环境
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 设置 .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # 3. 还原依赖
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # 4. 编译 Release 版本
+      - name: Build in Release
+        run: dotnet build -c Release --no-restore
+
+      # 5. 发布单文件（可选，生成独立 exe）
+      - name: Publish as single file
+        run: |
+          dotnet publish -c Release `
+            -r win-x64 `
+            --self-contained false `
+            -p:PublishSingleFile=true `
+            -p:DebugType=none `
+            -o ./publish
+
+      # 6. 获取版本号（从标签或手动输入）
+      - name: Get version
+        id: get_version
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $VERSION = "${{ github.event.inputs.tag }}"
+          } else {
+            $VERSION = "${{ github.ref_name }}"
+          }
+          echo "VERSION=$VERSION" >> $env:GITHUB_ENV
+          echo "版本号: $VERSION"
+
+      # 7. 创建 ZIP 压缩包（方便用户下载）
+      - name: Create ZIP archive
+        run: |
+          Compress-Archive -Path ./publish/* -DestinationPath DriveGroupManager-${{ env.VERSION }}.zip
+
+      # 8. 创建 GitHub Release 并上传附件
+      - name: Create Release and upload assets
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
+          body: |
+            ## 🎉 新版本发布
+
+            ### 下载说明
+            - 下载 `DriveGroupManager-${{ env.VERSION }}.zip`，解压后双击 exe 即可运行
+
+            ### 更新内容
+            - 请在这里填写本次更新的内容
+
+          files: |
+            ./DriveGroupManager-${{ env.VERSION }}.zip
+            ./publish/*.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
