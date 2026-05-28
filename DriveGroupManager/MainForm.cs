@@ -46,9 +46,9 @@ namespace DriveGroupManager
             this.AutoScaleDimensions = new SizeF(96F, 96F);
             this.Font = new Font("微软雅黑", 12F);
             this.Text = "硬盘分组管理器";
-            this.Size = new Size(900, 650);
+            this.Size = new Size(900, 720);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.MinimumSize = new Size(700, 500);
+            this.MinimumSize = new Size(700, 550);
 
             // 创建主面板（使用 MaterialDivider 作为分隔）
             var mainPanel = new TableLayoutPanel
@@ -58,8 +58,8 @@ namespace DriveGroupManager
                 RowCount = 3,
                 Padding = new Padding(10)
             };
-            mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 85F));
-            mainPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
+            mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 90F));
+            mainPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
             mainPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
 
             // 树形视图（显示分组和硬盘）
