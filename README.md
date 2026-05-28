@@ -51,6 +51,7 @@ dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile
 |------|------|
 | 框架 | .NET 10.0 (Windows Forms) |
 | 语言 | C# |
+| UI 组件 | MaterialSkin.2 |
 | 序列化 | System.Text.Json |
 | 构建 | dotnet CLI + GitHub Actions |
 | DPI 适配 | PerMonitorV2 + AutoScaleMode.Font |

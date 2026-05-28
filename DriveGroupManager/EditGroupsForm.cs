@@ -4,10 +4,12 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using MaterialSkin;
+using MaterialSkin.Controls;
 
 namespace DriveGroupManager
 {
-    public class EditGroupsForm : Form
+    public class EditGroupsForm : MaterialForm
     {
         public List<DriveGroup> UpdatedGroups { get; private set; }
         private List<DriveGroup> workingGroups;
@@ -20,13 +22,11 @@ namespace DriveGroupManager
         private Button btnRemoveDrive;
         private Button btnSave;
         private Button btnCancel;
-        private TextBox txtGroupName;
-        private TextBox txtDescription;
+        private MaterialTextBox txtGroupName;
+        private MaterialTextBox txtDescription;
 
         public EditGroupsForm(List<DriveGroup> existingGroups)
         {
-            this.Font = new Font("微软雅黑", 9F);
-            
             // 深拷贝现有分组
             workingGroups = existingGroups.Select(g => new DriveGroup
             {
@@ -38,8 +38,21 @@ namespace DriveGroupManager
 
             UpdatedGroups = workingGroups;
             InitializeComponent();
+
+            // 初始化 MaterialSkin 主题
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+            materialSkinManager.ColorScheme = new ColorScheme(
+                Primary.Blue600,
+                Primary.Blue700,
+                Primary.Blue200,
+                Accent.Cyan200,
+                TextShade.WHITE
+            );
+
             LoadGroups();
-            
+
             // 关键：初始化后立即刷新可用硬盘列表
             RefreshAllDriveLists();
         }
@@ -89,18 +102,21 @@ namespace DriveGroupManager
                 Height = 40,
                 Padding = new Padding(5)
             };
-            btnAddGroup = new Button
+            btnAddGroup = new MaterialButton
             {
-                Text = "➕ 新建分组",
-                Size = new Size(90, 30),
-                Font = new Font("微软雅黑", 9F)
+                Text = "新建分组",
+                AutoSize = false,
+                Size = new Size(100, 36),
+                Type = MaterialButton.MaterialButtonType.Contained,
+                UseAccentColor = false
             };
-            btnDeleteGroup = new Button
+            btnDeleteGroup = new MaterialButton
             {
-                Text = "🗑️ 删除",
-                Size = new Size(70, 30),
+                Text = "删除",
+                AutoSize = false,
+                Size = new Size(80, 36),
                 Enabled = false,
-                Font = new Font("微软雅黑", 9F)
+                Type = MaterialButton.MaterialButtonType.Outlined
             };
             btnAddGroup.Click += BtnAddGroup_Click;
             btnDeleteGroup.Click += BtnDeleteGroup_Click;
@@ -129,26 +145,24 @@ namespace DriveGroupManager
                 Anchor = AnchorStyles.None
             };
 
-            btnAddDrive = new Button
+            btnAddDrive = new MaterialButton
             {
-                Text = "▶ 添加 →",
+                Text = "添加 →",
+                AutoSize = false,
                 Size = new Size(90, 40),
                 Enabled = false,
-                Font = new Font("微软雅黑", 10F),
-                BackColor = Color.FromArgb(46, 204, 113),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
+                Type = MaterialButton.MaterialButtonType.Contained,
+                UseAccentColor = true,
                 Margin = new Padding(0, 0, 0, 10)
             };
-            btnRemoveDrive = new Button
+            btnRemoveDrive = new MaterialButton
             {
                 Text = "← 移除",
+                AutoSize = false,
                 Size = new Size(90, 40),
                 Enabled = false,
-                Font = new Font("微软雅黑", 10F),
-                BackColor = Color.FromArgb(231, 76, 60),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
+                Type = MaterialButton.MaterialButtonType.Contained,
+                UseAccentColor = false
             };
             btnAddDrive.Click += BtnAddDrive_Click;
             btnRemoveDrive.Click += BtnRemoveDrive_Click;
@@ -228,26 +242,25 @@ namespace DriveGroupManager
                 Font = new Font("微软雅黑", 9F)
             }, 0, 0);
 
-            txtGroupName = new TextBox
+            txtGroupName = new MaterialTextBox
             {
                 Dock = DockStyle.Fill,
-                Font = new Font("微软雅黑", 9F),
-                Enabled = false
+                Enabled = false,
+                Hint = "分组名称"
             };
             bottomLayout.Controls.Add(txtGroupName, 1, 0);
 
-            bottomLayout.Controls.Add(new Label
+            bottomLayout.Controls.Add(new MaterialLabel
             {
                 Text = "描述:",
-                TextAlign = ContentAlignment.MiddleRight,
-                Font = new Font("微软雅黑", 9F)
+                Dock = DockStyle.Fill
             }, 2, 0);
 
-            txtDescription = new TextBox
+            txtDescription = new MaterialTextBox
             {
                 Dock = DockStyle.Fill,
-                Font = new Font("微软雅黑", 9F),
-                Enabled = false
+                Enabled = false,
+                Hint = "分组描述"
             };
             bottomLayout.Controls.Add(txtDescription, 3, 0);
 
@@ -262,21 +275,20 @@ namespace DriveGroupManager
                 Padding = new Padding(5)
             };
 
-            btnSave = new Button
+            btnSave = new MaterialButton
             {
-                Text = "✓ 保存",
-                Size = new Size(100, 38),
-                BackColor = Color.FromArgb(46, 204, 113),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("微软雅黑", 10F, FontStyle.Bold)
+                Text = "保存",
+                AutoSize = false,
+                Size = new Size(100, 40),
+                Type = MaterialButton.MaterialButtonType.Contained,
+                UseAccentColor = true
             };
-            btnCancel = new Button
+            btnCancel = new MaterialButton
             {
-                Text = "✗ 取消",
-                Size = new Size(100, 38),
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("微软雅黑", 10F)
+                Text = "取消",
+                AutoSize = false,
+                Size = new Size(100, 40),
+                Type = MaterialButton.MaterialButtonType.Outlined
             };
             btnSave.Click += (s, e) =>
             {

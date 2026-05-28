@@ -4,10 +4,12 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using MaterialSkin;
+using MaterialSkin.Controls;
 
 namespace DriveGroupManager
 {
-    public partial class MainForm : Form
+    public partial class MainForm : MaterialForm
     {
         private DriveGroupManagerLogic manager;
         private TreeView tvGroupsAndDrives;  // 树形视图显示分组和硬盘
@@ -16,9 +18,24 @@ namespace DriveGroupManager
         private Button btnRefresh;
         private Button btnOpenDrive;
 
+        private readonly MaterialSkinManager materialSkinManager;
+
         public MainForm()
         {
             InitializeComponent();
+
+            // 初始化 MaterialSkin 主题管理器
+            materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+            materialSkinManager.ColorScheme = new ColorScheme(
+                Primary.Blue600,    // 主色
+                Primary.Blue700,    // 深色主色
+                Primary.Blue200,    // 浅色主色
+                Accent.Cyan200,     // 强调色
+                TextShade.WHITE     // 文字阴影
+            );
+
             manager = new DriveGroupManagerLogic();
             LoadData();
         }
@@ -28,30 +45,22 @@ namespace DriveGroupManager
             this.AutoScaleMode = AutoScaleMode.Font;
             this.AutoScaleDimensions = new SizeF(96F, 96F);
             this.Font = new Font("微软雅黑", 12F);
-            this.Text = "硬盘分组管理器 - 我的硬盘";
-            this.Size = new Size(800, 600);
+            this.Text = "硬盘分组管理器";
+            this.Size = new Size(900, 650);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.MinimumSize = new Size(700, 500);
-            this.BackColor = Color.White;
 
-            // 创建工具栏
-            var toolStrip = new ToolStrip();
-            toolStrip.Items.Add(new ToolStripButton("✏️ 编辑分组", null, (s, e) => EditGroups()));
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(new ToolStripButton("🔄 刷新", null, (s, e) => RefreshDisplay()));
-            toolStrip.Items.Add(new ToolStripSeparator());
-            toolStrip.Items.Add(new ToolStripButton("📂 帮助", null, (s, e) => ShowHelp()));
-            
-            // 创建主面板
+            // 创建主面板（使用 MaterialDivider 作为分隔）
             var mainPanel = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 2,
+                RowCount = 3,
                 Padding = new Padding(10)
             };
-            mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 90F));
-            mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+            mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 85F));
+            mainPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
+            mainPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
 
             // 树形视图（显示分组和硬盘）
             tvGroupsAndDrives = new TreeView
@@ -62,73 +71,78 @@ namespace DriveGroupManager
                 ShowPlusMinus = true,
                 FullRowSelect = true,
                 HideSelection = false,
-                Indent = 20
+                Indent = 20,
+                BackColor = Color.White
             };
             tvGroupsAndDrives.NodeMouseDoubleClick += TvGroupsAndDrives_NodeDoubleClick;
 
-            // 底部按钮面板
-            var bottomPanel = new Panel { Dock = DockStyle.Fill };
+            // 使用 MaterialCard 包裹树形视图
+            var card = new MaterialCard
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(10)
+            };
+            card.Controls.Add(tvGroupsAndDrives);
+
+            // 底部按钮面板 - 使用 MaterialButton
             var buttonFlow = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 FlowDirection = FlowDirection.RightToLeft,
-                Padding = new Padding(5)
+                Padding = new Padding(5),
+                WrapContents = false
             };
 
-            btnOpenDrive = new Button
+            var btnOpenDriveMaterial = new MaterialButton
             {
-                Text = "🚀 打开选中硬盘",
-                Size = new Size(140, 35),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(39, 174, 96),
-                ForeColor = Color.White,
-                Font = new Font("微软雅黑", 9),
+                Text = "打开选中硬盘",
+                AutoSize = false,
+                Size = new Size(160, 40),
+                Type = MaterialButton.MaterialButtonType.Contained,
+                UseAccentColor = true,
                 Enabled = false
             };
-            btnOpenDrive.Click += (s, e) => OpenSelectedDrive();
+            btnOpenDriveMaterial.Click += (s, e) => OpenSelectedDrive();
+            btnOpenDrive = btnOpenDriveMaterial;
 
-            btnEditGroups = new Button
+            var btnEditGroupsMaterial = new MaterialButton
             {
-                Text = "✏️ 编辑分组设置",
-                Size = new Size(130, 35),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(52, 152, 219),
-                ForeColor = Color.White,
-                Font = new Font("微软雅黑", 9)
+                Text = "编辑分组",
+                AutoSize = false,
+                Size = new Size(130, 40),
+                Type = MaterialButton.MaterialButtonType.Contained,
+                UseAccentColor = false
             };
-            btnEditGroups.Click += (s, e) => EditGroups();
+            btnEditGroupsMaterial.Click += (s, e) => EditGroups();
+            btnEditGroups = btnEditGroupsMaterial;
 
-            btnRefresh = new Button
+            var btnRefreshMaterial = new MaterialButton
             {
-                Text = "🔄 刷新",
-                Size = new Size(100, 35),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(149, 165, 166),
-                ForeColor = Color.White,
-                Font = new Font("微软雅黑", 9)
+                Text = "刷新",
+                AutoSize = false,
+                Size = new Size(100, 40),
+                Type = MaterialButton.MaterialButtonType.Outlined,
+                UseAccentColor = false
             };
-            btnRefresh.Click += (s, e) => RefreshDisplay();
+            btnRefreshMaterial.Click += (s, e) => RefreshDisplay();
+            btnRefresh = btnRefreshMaterial;
 
-            buttonFlow.Controls.AddRange(new Control[] { btnOpenDrive, btnEditGroups, btnRefresh });
+            buttonFlow.Controls.AddRange(new Control[] { btnOpenDriveMaterial, btnEditGroupsMaterial, btnRefreshMaterial });
 
-            lblStatus = new Label
+            // 状态栏使用 MaterialLabel
+            var statusLabel = new MaterialLabel
             {
                 Text = "就绪",
                 Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Font = new Font("微软雅黑", 9),
-                ForeColor = Color.Gray
+                FontType = MaterialSkin.MaterialSkinManager.fontType.Body2
             };
+            lblStatus = statusLabel;
 
-            bottomPanel.Controls.Add(buttonFlow);
-            mainPanel.Controls.Add(tvGroupsAndDrives, 0, 0);
-            mainPanel.Controls.Add(bottomPanel, 0, 1);
-            mainPanel.Controls.Add(lblStatus, 0, 2);
-            mainPanel.SetRowSpan(lblStatus, 1);
-            mainPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            mainPanel.Controls.Add(card, 0, 0);
+            mainPanel.Controls.Add(buttonFlow, 0, 1);
+            mainPanel.Controls.Add(statusLabel, 0, 2);
 
             this.Controls.Add(mainPanel);
-            this.Controls.Add(toolStrip);
         }
 
         private void LoadData()
