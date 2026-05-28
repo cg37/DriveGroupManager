@@ -62,7 +62,7 @@ namespace DriveGroupManager
             };
 
             mainPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
-            mainPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80F));  // 固定宽度给按钮
+            mainPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));  // 固定宽度给按钮
             mainPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
             mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 85F));
             mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 15F));
@@ -110,29 +110,40 @@ namespace DriveGroupManager
             groupPanel.Controls.Add(groupButtonPanel);
 
             // ========== 中间：操作按钮 ==========
-            var middlePanel = new Panel { Dock = DockStyle.Fill };
-            var middleFlow = new FlowLayoutPanel
+            var middlePanel = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 3,
+                Padding = new Padding(0)
+            };
+            middlePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            middlePanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            middlePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+
+            var buttonContainer = new FlowLayoutPanel
+            {
                 FlowDirection = FlowDirection.TopDown,
                 Padding = new Padding(5),
+                AutoSize = true,
                 Anchor = AnchorStyles.None
             };
 
             btnAddDrive = new Button
             {
                 Text = "▶ 添加 →",
-                Size = new Size(80, 40),
+                Size = new Size(90, 40),
                 Enabled = false,
                 Font = new Font("微软雅黑", 10F),
                 BackColor = Color.FromArgb(46, 204, 113),
                 ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
+                FlatStyle = FlatStyle.Flat,
+                Margin = new Padding(0, 0, 0, 10)
             };
             btnRemoveDrive = new Button
             {
                 Text = "← 移除",
-                Size = new Size(80, 40),
+                Size = new Size(90, 40),
                 Enabled = false,
                 Font = new Font("微软雅黑", 10F),
                 BackColor = Color.FromArgb(231, 76, 60),
@@ -142,8 +153,8 @@ namespace DriveGroupManager
             btnAddDrive.Click += BtnAddDrive_Click;
             btnRemoveDrive.Click += BtnRemoveDrive_Click;
 
-            middleFlow.Controls.AddRange(new Control[] { btnAddDrive, btnRemoveDrive });
-            middlePanel.Controls.Add(middleFlow);
+            buttonContainer.Controls.AddRange(new Control[] { btnAddDrive, btnRemoveDrive });
+            middlePanel.Controls.Add(buttonContainer, 0, 1);
 
             // ========== 右侧：硬盘管理 ==========
             var rightPanel = new TableLayoutPanel
