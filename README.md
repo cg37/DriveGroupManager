@@ -64,8 +64,6 @@ DriveGroupManager/
 ├── Program.cs                 # 应用入口，DPI 初始化
 ├── MainForm.cs                # 主窗体（树形视图、工具栏）
 ├── EditGroupsForm.cs          # 分组编辑窗体
-├── GroupEditDialog.cs         # 分组编辑对话框
-├── DriveSelectionDialog.cs    # 硬盘选择对话框
 ├── DriveGroup.cs              # 分组数据模型
 ├── DriveGroupManager.cs       # 业务逻辑（JSON 读写、硬盘操作）
 └── .github/workflows/         # CI/CD 自动构建与发布
