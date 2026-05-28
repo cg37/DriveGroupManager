@@ -92,8 +92,13 @@ namespace DriveGroupManager
             {
                 Dock = DockStyle.Fill,
                 Font = new Font("微软雅黑", 10F),
-                IntegralHeight = false
+                IntegralHeight = false,
+                DrawMode = DrawMode.OwnerDrawFixed,
+                ItemHeight = 28,
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.None
             };
+            lbGroups.DrawItem += LbGroups_DrawItem;
             lbGroups.SelectedIndexChanged += LbGroups_SelectedIndexChanged;
 
             var groupButtonPanel = new FlowLayoutPanel
@@ -192,8 +197,13 @@ namespace DriveGroupManager
             {
                 Dock = DockStyle.Fill,
                 Font = new Font("微软雅黑", 10F),
-                IntegralHeight = false
+                IntegralHeight = false,
+                DrawMode = DrawMode.OwnerDrawFixed,
+                ItemHeight = 28,
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.None
             };
+            lbDrivesInGroup.DrawItem += LbDrives_DrawItem;
             drivesInGroupPanel.Controls.Add(lbDrivesInGroup);
 
             // 可用硬盘
@@ -207,8 +217,13 @@ namespace DriveGroupManager
             {
                 Dock = DockStyle.Fill,
                 Font = new Font("微软雅黑", 10F),
-                IntegralHeight = false
+                IntegralHeight = false,
+                DrawMode = DrawMode.OwnerDrawFixed,
+                ItemHeight = 28,
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.None
             };
+            lbAvailableDrives.DrawItem += LbDrives_DrawItem;
             lbAvailableDrives.DoubleClick += (s, e) =>
             {
                 if (btnAddDrive.Enabled && lbAvailableDrives.SelectedItem != null)
@@ -253,7 +268,9 @@ namespace DriveGroupManager
             bottomLayout.Controls.Add(new MaterialLabel
             {
                 Text = "描述:",
-                Dock = DockStyle.Fill
+                Dock = DockStyle.Fill,
+                FontType = MaterialSkin.MaterialSkinManager.fontType.Body2,
+                TextAlign = ContentAlignment.MiddleLeft
             }, 2, 0);
 
             txtDescription = new MaterialTextBox
@@ -418,6 +435,65 @@ namespace DriveGroupManager
                 return displayText.Substring(0, 2);
             }
             return "";
+        }
+
+        private void LbGroups_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index < 0) return;
+            var lb = (ListBox)sender;
+
+            // 绘制背景
+            if ((e.State & DrawItemState.Selected) == DrawItemState.Selected)
+            {
+                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(25, 118, 210)), e.Bounds);
+            }
+            else
+            {
+                e.Graphics.FillRectangle(new SolidBrush(lb.BackColor), e.Bounds);
+            }
+
+            // 绘制文本
+            if (lb.Items[e.Index] is DriveGroup group)
+            {
+                string text = group.ToString();
+                Color textColor = (e.State & DrawItemState.Selected) == DrawItemState.Selected
+                    ? Color.White
+                    : Color.FromArgb(33, 33, 33);
+
+                TextRenderer.DrawText(e.Graphics, text, lb.Font,
+                    new Rectangle(e.Bounds.X + 4, e.Bounds.Y, e.Bounds.Width - 4, e.Bounds.Height),
+                    textColor, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+            }
+
+            e.DrawFocusRectangle();
+        }
+
+        private void LbDrives_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index < 0) return;
+            var lb = (ListBox)sender;
+
+            // 绘制背景
+            if ((e.State & DrawItemState.Selected) == DrawItemState.Selected)
+            {
+                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(25, 118, 210)), e.Bounds);
+            }
+            else
+            {
+                e.Graphics.FillRectangle(new SolidBrush(lb.BackColor), e.Bounds);
+            }
+
+            // 绘制文本
+            string text = lb.Items[e.Index]?.ToString() ?? "";
+            Color textColor = (e.State & DrawItemState.Selected) == DrawItemState.Selected
+                ? Color.White
+                : Color.FromArgb(33, 33, 33);
+
+            TextRenderer.DrawText(e.Graphics, text, lb.Font,
+                new Rectangle(e.Bounds.X + 4, e.Bounds.Y, e.Bounds.Width - 4, e.Bounds.Height),
+                textColor, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+
+            e.DrawFocusRectangle();
         }
 
         private void LbGroups_SelectedIndexChanged(object sender, EventArgs e)

@@ -60,7 +60,7 @@ namespace DriveGroupManager
             };
             mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 85F));
             mainPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
-            mainPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            mainPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
 
             // 树形视图（显示分组和硬盘）
             tvGroupsAndDrives = new TreeView
@@ -72,8 +72,11 @@ namespace DriveGroupManager
                 FullRowSelect = true,
                 HideSelection = false,
                 Indent = 20,
-                BackColor = Color.White
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.None,
+                DrawMode = TreeViewDrawMode.OwnerDrawText
             };
+            tvGroupsAndDrives.DrawNode += TvGroupsAndDrives_DrawNode;
             tvGroupsAndDrives.NodeMouseDoubleClick += TvGroupsAndDrives_NodeDoubleClick;
 
             // 使用 MaterialCard 包裹树形视图
@@ -265,6 +268,41 @@ namespace DriveGroupManager
             if (e.Node.Tag is string driveLetter)
             {
                 manager.OpenDrive(driveLetter);
+            }
+        }
+
+        private void TvGroupsAndDrives_DrawNode(object sender, DrawTreeNodeEventArgs e)
+        {
+            // 使用 OwnerDrawText 模式：让系统绘制默认部分，我们只自定义文本颜色和字体
+            TreeNode node = e.Node;
+
+            // 如果节点未被选中，使用自定义颜色和字体
+            if ((e.State & TreeNodeStates.Selected) == 0)
+            {
+                Color textColor = node.ForeColor;
+                Font nodeFont = node.NodeFont ?? e.Node.TreeView.Font;
+
+                // 计算文本绘制区域
+                Rectangle textRect = e.Bounds;
+                textRect.X += 2;
+
+                // 绘制背景（处理选中/焦点状态）
+                if ((e.State & TreeNodeStates.Hot) != 0)
+                {
+                    using (var brush = new SolidBrush(Color.FromArgb(230, 240, 250)))
+                    {
+                        e.Graphics.FillRectangle(brush, e.Bounds);
+                    }
+                }
+
+                // 绘制文本
+                TextRenderer.DrawText(e.Graphics, node.Text, nodeFont, textRect, textColor,
+                    TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+            }
+            else
+            {
+                // 选中状态使用默认绘制
+                e.DrawDefault = true;
             }
         }
 
