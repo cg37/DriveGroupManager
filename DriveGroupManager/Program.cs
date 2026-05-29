@@ -1,30 +1,80 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using DriveGroupManager.Api.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace DriveGroupManager
 {
-    /// <summary>
-    /// 应用程序主入口类
-    /// </summary>
     static class Program
     {
-        /// <summary>
-        /// 应用程序的主入口点
-        /// </summary>
+        private static IHost? _apiHost;
+
         [STAThread]
         static void Main()
         {
-            // 启用 PerMonitorV2 DPI 感知，适配高分屏（必须放在最前面）
             Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
-
-            // 启用应用程序的视觉样式（让控件看起来更现代）
             Application.EnableVisualStyles();
-            
-            // 设置控件使用兼容的文本渲染（避免字体模糊）
             Application.SetCompatibleTextRenderingDefault(false);
-            
-            // 启动主窗体
+
+            // 启动后端 API 服务
+            StartApiService();
+
+            // 启动 WinForms 应用
             Application.Run(new MainForm());
+
+            // 关闭 API 服务
+            StopApiService();
+        }
+
+        private static void StartApiService()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            // 配置服务
+            builder.Services.AddSingleton<IDriveService, DriveService>();
+            builder.Services.AddControllers();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
+
+            // 配置 Kestrel 监听端口
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.ListenLocalhost(5000);
+            });
+
+            var app = builder.Build();
+
+            app.UseCors("AllowAll");
+            app.UseAuthorization();
+            app.MapControllers();
+
+            _apiHost = app;
+
+            // 在后台线程启动 API
+            Task.Run(async () =>
+            {
+                await app.RunAsync();
+            });
+        }
+
+        private static void StopApiService()
+        {
+            if (_apiHost != null)
+            {
+                _apiHost.StopAsync().Wait();
+                _apiHost.Dispose();
+            }
         }
     }
 }
