@@ -2,73 +2,189 @@
 
 一款 Windows 桌面工具，用于将电脑中的多块硬盘按用途组织为自定义分组，方便集中管理和快速访问。
 
+**架构：WinForms + WebView2 + React + ASP.NET Core Web API**
+
 ## 功能
 
-- **可视化分组** — 以树形结构展示分组与硬盘的层级关系，支持展开/折叠
+- **可视化分组** — 以卡片形式展示分组与硬盘的层级关系
 - **自定义分组管理** — 新建、删除、重命名分组，自由分配硬盘成员
 - **空间预警** — 根据剩余空间百分比自动切换颜色：绿色（充足）、橙色（紧张）、红色（不足）
-- **一键打开** — 双击硬盘节点或点击按钮，直接唤起资源管理器
+- **一键打开** — 点击硬盘卡片即可唤起资源管理器
 - **数据持久化** — 分组配置以 JSON 格式保存在本地，启动时自动加载
 
-## 界面预览
+## 架构说明
 
-> 待补充截图
+本项目采用混合架构：
 
-## 下载安装
+```
+┌─────────────────────────────────────────────────────────┐
+│                  WinForms 宿主窗口                        │
+│  ┌─────────────────────────────────────────────────────┐│
+│  │              WebView2 (Edge Chromium)               ││
+│  │  ┌───────────────────────────────────────────────┐  ││
+│  │  │           React 前端 (Ant Design)             │  ││
+│  │  │                                               │  ││
+│  │  │  • 分组卡片展示                                │  ││
+│  │  │  • 硬盘容量可视化                              │  ││
+│  │  │  • 分组编辑对话框                              │  ││
+│  │  └───────────────────────────────────────────────┘  ││
+│  └─────────────────────────────────────────────────────┘│
+│                          ↑↓ HTTP                        │
+│  ┌─────────────────────────────────────────────────────┐│
+│  │         ASP.NET Core Web API (localhost:5000)      ││
+│  │  • DriveService (硬盘信息获取)                     ││
+│  │  • GroupsController (分组CRUD)                     ││
+│  │  • DrivesController (硬盘操作)                     ││
+│  └─────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────┘
+```
 
-从 [Releases](https://github.com/OWNER/DriveGroupManager/releases) 页面下载最新版本的 `DriveGroupManager-vX.X.X.zip`，解压后双击 `DriveGroupManager.exe` 即可运行。
+## 系统要求
 
-**系统要求**
 - Windows 10 / Windows 11 (64 位)
 - [.NET 10.0 运行时](https://dotnet.microsoft.com/download/dotnet/10.0)
+- WebView2 运行时（通常已预装在 Windows 10/11 中）
+- Node.js 18+（仅开发时需要）
 
 ## 从源码构建
 
+### 1. 克隆仓库
+
 ```bash
-# 克隆仓库
 git clone https://github.com/OWNER/DriveGroupManager.git
 cd DriveGroupManager
-
-# 还原依赖并编译
-dotnet restore
-dotnet build -c Release
-
-# 发布为单文件可执行程序
-dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o ./publish
 ```
 
-## 使用说明
+### 2. 构建后端和 WinForms
 
-1. 启动后自动读取本地硬盘并加载已保存的分组配置
-2. 点击工具栏「编辑分组设置」进入管理界面
-3. 在管理界面中可以新建分组，将可用硬盘加入或移出分组
-4. 双击任意硬盘节点即可在资源管理器中打开对应盘符
-5. 分组数据自动保存在 `%LocalAppData%\DriveGroupManager\groups.json`
+```bash
+dotnet restore
+dotnet build -c Release
+```
+
+### 3. 构建前端（开发模式）
+
+```bash
+cd drive-group-web
+npm install
+npm run dev
+```
+
+### 4. 构建前端（生产模式）
+
+```bash
+cd drive-group-web
+npm install
+npm run build
+```
+
+### 5. 发布完整应用
+
+```bash
+# 前端构建
+cd drive-group-web
+npm run build
+
+# 复制前端文件到 WinForms 项目
+cp -r dist/* ../DriveGroupManager/bin/Release/net10.0-windows/web/
+
+# 发布 WinForms
+cd ..
+dotnet publish DriveGroupManager -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o ./publish
+```
+
+## 开发模式运行
+
+### 方式一：同时启动前后端
+
+```bash
+# 终端 1：启动后端 API
+dotnet run --project DriveGroupManager.Api
+
+# 终端 2：启动前端开发服务器
+cd drive-group-web
+npm run dev
+
+# 终端 3：启动 WinForms（会加载 localhost:3000）
+dotnet run --project DriveGroupManager
+```
+
+### 方式二：直接运行 WinForms（自动启动 API）
+
+```bash
+# 先确保前端已构建
+cd drive-group-web
+npm run build
+
+# 运行 WinForms（自动启动内置 API）
+cd ..
+dotnet run --project DriveGroupManager
+```
 
 ## 技术栈
 
 | 类别 | 技术 |
 |------|------|
-| 框架 | .NET 10.0 (Windows Forms) |
-| 语言 | C# |
-| UI 组件 | MaterialSkin.2 |
-| 序列化 | System.Text.Json |
-| 构建 | dotnet CLI + GitHub Actions |
-| DPI 适配 | PerMonitorV2 + AutoScaleMode.Font |
+| 宿主框架 | WinForms + WebView2 |
+| 后端 API | ASP.NET Core 10.0 |
+| 前端框架 | React 19 + TypeScript |
+| UI 组件库 | Ant Design 5.x |
+| 窗口样式 | MaterialSkin.2 |
+| 构建工具 | Vite / dotnet CLI |
+| 通信 | HTTP + JS 互操作 |
 
 ## 项目结构
 
 ```
 DriveGroupManager/
-├── DriveGroupManager.csproj   # 项目文件
-├── app.manifest               # Windows DPI 感知声明
-├── Program.cs                 # 应用入口，DPI 初始化
-├── MainForm.cs                # 主窗体（树形视图、工具栏）
-├── EditGroupsForm.cs          # 分组编辑窗体
-├── DriveGroup.cs              # 分组数据模型
-├── DriveGroupManager.cs       # 业务逻辑（JSON 读写、硬盘操作）
-└── .github/workflows/         # CI/CD 自动构建与发布
+├── DriveGroupManager/                    # WinForms 宿主应用
+│   ├── DriveGroupManager.csproj
+│   ├── Program.cs                        # 启动 API + WinForms
+│   └── MainForm.cs                       # WebView2 容器
+│
+├── DriveGroupManager.Api/                # ASP.NET Core Web API
+│   ├── Controllers/
+│   │   ├── DrivesController.cs
+│   │   └── GroupsController.cs
+│   ├── Services/
+│   │   └── DriveService.cs
+│   ├── Models/
+│   │   └── DriveGroup.cs
+│   └── Program.cs
+│
+├── drive-group-web/                      # React 前端
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── GroupTree.tsx
+│   │   │   └── GroupEditor.tsx
+│   │   ├── api/
+│   │   │   └── driveApi.ts
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   ├── package.json
+│   └── vite.config.ts
+│
+└── README.md
 ```
+
+## JS 与 C# 互操作
+
+前端可以通过 `chrome.webview` 对象调用 WinForms 中的本地方法：
+
+```typescript
+// 检测是否在 WebView2 环境
+const isWebView2 = () => !!(window as any).chrome?.webview;
+
+// 调用本地方法打开硬盘
+if (isWebView2()) {
+  const nativeApp = (window as any).chrome.webview.hostObjects.nativeApp;
+  nativeApp.OpenDrive('C:');
+}
+```
+
+支持的本地方法：
+- `OpenDrive(driveLetter: string)` - 打开指定硬盘
+- `GetVersion()` - 获取应用版本
 
 ## 许可证
 
